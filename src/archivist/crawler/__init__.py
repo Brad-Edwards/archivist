@@ -13,9 +13,5 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__main__.py
-
-Typical usage example:
-    
-    python __main__.py
+__init__.py
 """
