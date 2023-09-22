@@ -1,5 +1,5 @@
 """
-Copyright 2023 Brad Edwards
+Copyright © 2023 Brad Edwards
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,23 @@ from src.archivist import __app_name__, __version__
 
 app = typer.Typer()
 
+
+class Config:
+    def __init__(self, version: Optional[bool], github_url: Optional[str],
+                 output_path: Optional[str], branch: Optional[str],
+                 verbose: Optional[bool], quiet: Optional[bool],
+                 token: Optional[str], config_file: Optional[str],
+                 update: Optional[bool], embeddings_path: Optional[str]):
+        self.version = version
+        self.github_url = github_url
+        self.output_path = output_path
+        self.branch = branch
+        self.verbose = verbose
+        self.quiet = quiet
+        self.token = token
+        self.config_file = config_file
+        self.update = update
+        self.embeddings_path = embeddings_path
 
 def _version_callback(value: bool):
     if value:
@@ -117,3 +134,7 @@ def main(
         None
     """
     typer.echo(f"{__app_name__} version {__version__}")
+    config = (github_url, output_path, branch, verbose, quiet, token, config, update, embeddings_path)
+
+
+
