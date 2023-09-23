@@ -18,8 +18,14 @@ cli.py
 Module for the command line interface. Parses command line arguments and
 passes them to the main function.
 """
+from copy import deepcopy
+from urllib.parse import urlparse
+import os
+
 from src.archivist.__main__ import Config
-from src.archivist.errors.errors import ERRORS, INVALID_CONFIG, NO_CONFIG
+from src.archivist.errors.errors import UNSUPPORTED_CONFIG, NO_CONFIG, UNSUPPORTED_URL, NO_EMPTY_PATH, \
+    UNSUPPORTED_PATH, NON_EXISTENT_PATH, UNSUPPORTED_CONFIG_PATH
+
 
 def handle_config(config: Config) -> Config:
     """
@@ -32,13 +38,12 @@ def handle_config(config: Config) -> Config:
         Config: The updated configuration object.
     """
     if not config:
-        raise ValueError(ERRORS[NO_CONFIG])
+        raise ValueError(NO_CONFIG)
 
     if not isinstance(config, Config):
-        raise ValueError(ERRORS[INVALID_CONFIG])
+        raise ValueError(UNSUPPORTED_CONFIG)
 
-    if (not config.version
-            and not config.github_url
+    if (not config.github_url
             and not config.output_path
             and not config.branch
             and not config.verbose
@@ -47,25 +52,24 @@ def handle_config(config: Config) -> Config:
             and not config.config_file
             and not config.update
             and not config.embeddings_path):
-        raise ValueError(ERRORS[INVALID_CONFIG])
+        raise ValueError(UNSUPPORTED_CONFIG)
 
-    handle_version(config)
-    handle_github_url(config)
-    handle_output_path(config)
-    handle_branch(config)
-    handle_verbose(config)
-    handle_quiet(config)
-    handle_token(config)
-    handle_config_file(config)
-    handle_update(config)
-    handle_embeddings_path(config)
-    return config
+    config_copy = deepcopy(config)
+    handle_github_url(config_copy)
+    handle_output_path(config_copy)
+    handle_branch(config_copy)
+    handle_verbose(config_copy)
+    handle_quiet(config_copy)
+    handle_token(config_copy)
+    handle_config_file(config_copy)
+    handle_update(config_copy)
+    handle_embeddings_path(config_copy)
+    return config_copy
 
 
-
-def handle_version(config: Config) -> None:
+def handle_github_url(config: Config) -> None:
     """
-    Handle the --version option.
+    Handle the --github-url option.
 
     Args:
         config (Config): The configuration object.
@@ -73,12 +77,18 @@ def handle_version(config: Config) -> None:
     Returns:
         None
     """
-    pass
+    github_url = config.github_url
 
+    if not github_url:
+        raise ValueError(UNSUPPORTED_URL)
 
-def handle_github_url(config: Config) -> None:
-    """Handle the --github-url option."""
-    pass
+    try:
+        parsed_url = urlparse(github_url)
+    except Exception as e:
+        raise ValueError(UNSUPPORTED_URL)
+
+    if parsed_url.netloc != "github.com":
+        raise ValueError(UNSUPPORTED_URL)
 
 
 def handle_output_path(config: Config) -> None:
@@ -91,7 +101,13 @@ def handle_output_path(config: Config) -> None:
     Returns:
         None
     """
-    pass
+    output_path = config.output_path
+
+    if output_path is None or output_path.strip() == "":
+        raise ValueError(NO_EMPTY_PATH)
+
+    if not all(c.isalnum() or c in '-_./\\' for c in output_path):
+        raise ValueError(UNSUPPORTED_PATH)
 
 
 def handle_branch(config: Config) -> None:
@@ -156,7 +172,16 @@ def handle_config_file(config: Config) -> None:
     Returns:
         None
     """
-    pass
+    config_file = config.config_file
+
+    if config_file is None:
+        return
+
+    if not all(c.isalnum() or c in '-_./\\' for c in config_file):
+        raise ValueError(UNSUPPORTED_CONFIG_PATH)
+
+    if not os.path.exists(config_file):
+        raise ValueError(NON_EXISTENT_PATH)
 
 
 def handle_update(config: Config) -> None:
@@ -169,7 +194,8 @@ def handle_update(config: Config) -> None:
     Returns:
         None
     """
-    pass
+    if config.update and not isinstance(config.update, bool):
+        raise ValueError(UNSUPPORTED_CONFIG)
 
 
 def handle_embeddings_path(config: Config) -> None:
@@ -182,4 +208,10 @@ def handle_embeddings_path(config: Config) -> None:
     Returns:
         None
     """
-    pass
+    embeddings_path = config.embeddings_path
+
+    if embeddings_path is None:
+        raise ValueError(NON_EXISTENT_PATH)
+
+    if not all(c.isalnum() or c in '-_./\\' for c in embeddings_path):
+        raise ValueError(UNSUPPORTED_PATH)

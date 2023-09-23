@@ -44,6 +44,7 @@ class Config:
         self.update = update
         self.embeddings_path = embeddings_path
 
+
 def _version_callback(value: bool):
     if value:
         typer.echo(f"{__app_name__} version {__version__}")

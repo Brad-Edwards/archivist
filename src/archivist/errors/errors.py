@@ -15,13 +15,10 @@ limitations under the License.
 
 errors.py
 """
-
-(
-    INVALID_CONFIG,
-    NO_CONFIG,
-) = range(2)
-
-ERRORS = {
-    INVALID_CONFIG: "Invalid configuration.",
-    NO_CONFIG: "No configuration provided.",
-}
+NO_CONFIG = "No configuration provided."
+UNSUPPORTED_CONFIG = "Unsupported configuration."
+UNSUPPORTED_CONFIG_PATH = "Unsupported configuration path."
+UNSUPPORTED_URL = "Unsupported URL."
+NO_EMPTY_PATH = "Path cannot be empty."
+UNSUPPORTED_PATH = "Unsupported path."
+NON_EXISTENT_PATH = "Path does not exist."
