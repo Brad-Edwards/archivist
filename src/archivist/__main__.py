@@ -26,19 +26,29 @@ from typing_extensions import Annotated
 import argparse
 import subprocess
 from src.archivist import __app_name__, __version__, DEBUG
+from src.archivist.crawler.crawler import Crawler
 
-parser = argparse.ArgumentParser(prog='Archivist',
-                                 description="Archivist is a tool for understanding codebases.")
-parser.add_argument("--version", "-v", action="store_true", help="Print the version number and exit.", default=False)
-parser.add_argument("--update", "-u", action="store_true", help="Update the Archivist tool to the latest version.", default=False)
-parser.add_argument("--github_url", "-g", type=str, help="The GitHub URL to download the code from.")
-parser.add_argument("--output_path", "-o", type=str, help="The path where the GitHub repo will be cloned.")
-parser.add_argument("--branch", "-b", type=str, help="Specify a particular branch to clone.")
-parser.add_argument("--verbose", "-V", action="store_true", help="Enable verbose output.", default=False)
-parser.add_argument("--quiet", "-q", action="store_true", help="Suppress all output except errors.", default=False)
-parser.add_argument("--token", "-t", type=str, help="Provide a GitHub authentication token.")
-parser.add_argument("--config", "-c", type=str, help="Path to a configuration file.")
-parser.add_argument("--embeddings_path", "-e", type=str, help="The output path for vector embeddings.")
+parser = argparse.ArgumentParser(prog='Archivist', description="Archivist is a tool for understanding codebases.")
+parser.add_argument("--version", "-v", action="store_true",
+                    help="Print the version number and exit.", default=False)
+parser.add_argument("--update", "-u", action="store_true",
+                    help="Update the Archivist tool to the latest version.", default=False)
+parser.add_argument("--github_url", "-g", type=str,
+                    help="The GitHub URL to download the code from.")
+parser.add_argument("--output_path", "-o", type=str,
+                    help="The path where the GitHub repo will be cloned.")
+parser.add_argument("--branch", "-b", type=str,
+                    help="Specify a particular branch to clone.")
+parser.add_argument("--verbose", "-V", action="store_true",
+                    help="Enable verbose output.", default=False)
+parser.add_argument("--quiet", "-q", action="store_true",
+                    help="Suppress all output except errors.", default=False)
+parser.add_argument("--token", "-t", type=str,
+                    help="Provide a GitHub authentication token.")
+parser.add_argument("--config", "-c", type=str,
+                    help="Path to a configuration file.")
+parser.add_argument("--embeddings_path", "-e", type=str,
+                    help="The output path for vector embeddings.")
 
 
 class Config:
@@ -97,3 +107,6 @@ def main() -> None:
     config = Config(github_url=args.github_url, output_path=args.output_path, branch=args.branch,
                     verbose=args.verbose, quiet=args.quiet, token=args.token, config_file=args.config,
                     embeddings_path=args.embeddings_path)
+
+    crawler = Crawler(config.github_url, config.output_path)
+    crawler.execute()
