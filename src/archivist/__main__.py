@@ -21,10 +21,11 @@ Typical usage example:
 """
 import sys
 
-from typing import Optional, List
+from typing import Optional
+from typing_extensions import Annotated
 import typer
 import subprocess
-from src.archivist import __app_name__, __version__
+from src.archivist import __app_name__, __version__, DEBUG
 
 app = typer.Typer()
 
@@ -49,68 +50,66 @@ class Config:
 
 @app.command()
 def main(
-        version: Optional[bool] = typer.Option(
-            None,
+        version: Annotated[Optional[bool], typer.Option(
+            False,
             "--version",
             "-v",
             help="Print the version number and exit.",
-            is_eager=True,
-        ),
-        github_url: Optional[str] = typer.Option(
+        )] = None,
+        github_url: Annotated[Optional[str], typer.Option(
             None,
             "--github-url",
             "-g",
             help="The GitHub URL to download the code from."
-        ),
-        output_path: Optional[str] = typer.Option(
+        )] = None,
+        output_path: Annotated[Optional[str], typer.Option(
             None,
             "--output-path",
             "-o",
             help="The path where the GitHub repo will be cloned."
-        ),
-        branch: Optional[str] = typer.Option(
+        )] = None,
+        branch: Annotated[Optional[str], typer.Option(
             None,
             "--branch",
             "-b",
             help="Specify a particular branch to clone."
-        ),
-        verbose: Optional[bool] = typer.Option(
-            None,
+        )] = None,
+        verbose: Annotated[Optional[bool], typer.Option(
+            False,
             "--verbose",
             "-V",
             help="Enable verbose output."
-        ),
-        quiet: Optional[bool] = typer.Option(
-            None,
+        )] = None,
+        quiet: Annotated[Optional[bool], typer.Option(
+            False,
             "--quiet",
             "-q",
             help="Suppress all output except errors."
-        ),
-        token: Optional[str] = typer.Option(
+        )] = None,
+        token: Annotated[Optional[str], typer.Option(
             None,
             "--token",
             "-k",
             help="Provide a GitHub authentication token."
-        ),
-        config: Optional[str] = typer.Option(
+        )] = None,
+        config: Annotated[Optional[str], typer.Option(
             "config.yaml",
             "--config",
             "-c",
             help="Path to a configuration file."
-        ),
-        update: Optional[bool] = typer.Option(
+        )] = None,
+        update: Annotated[Optional[bool], typer.Option(
             None,
             "--update",
             "-u",
-            is_eager=True,
             help="Update the Archivist tool to the latest version."
-        ),
-        embeddings_path: Optional[str] = typer.Option(
+        )] = None,
+        embeddings_path: Annotated[Optional[str], typer.Option(
             None,
             "--embeddings-path",
             "-e",
             help="The output path for vector embeddings."
-        )
+        )] = None,
 ) -> None:
     """
     Archivist is a tool for understanding codebases.
@@ -132,12 +131,13 @@ def main(
     """
     if version:
         typer.echo(f"{__app_name__} version {__version__}")
-        raise sys.exit(0)
+        sys.exit(0)
 
     if update:
-        subprocess.run(["pip", "install", "--upgrade", "archivist"])
+        if DEBUG:
+            subprocess.run(["pip", "install", "-e", "."])
+        else:
+            subprocess.run(["pip", "install", "--upgrade", "archivist"])
         typer.echo("Updated to the latest version.")
-        raise sys.exit(0)
-
-
+        sys.exit(0)
 

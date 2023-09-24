@@ -15,7 +15,3 @@ limitations under the License.
 
 __init__.py
 """
-
-__app_name__ = "archivist"
-__version__ = "0.1.2"
-DEBUG = False
