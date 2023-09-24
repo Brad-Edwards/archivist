@@ -50,7 +50,6 @@ def handle_config(config: Config) -> Config:
             and not config.quiet
             and not config.token
             and not config.config_file
-            and not config.update
             and not config.embeddings_path):
         raise ValueError(UNSUPPORTED_CONFIG)
 
@@ -62,7 +61,6 @@ def handle_config(config: Config) -> Config:
     handle_quiet(config_copy)
     handle_token(config_copy)
     handle_config_file(config_copy)
-    handle_update(config_copy)
     handle_embeddings_path(config_copy)
     return config_copy
 
@@ -182,20 +180,6 @@ def handle_config_file(config: Config) -> None:
 
     if not os.path.exists(config_file):
         raise ValueError(NON_EXISTENT_PATH)
-
-
-def handle_update(config: Config) -> None:
-    """
-    Handle the --update option.
-
-    Args:
-        config (Config): The configuration object.
-
-    Returns:
-        None
-    """
-    if config.update and not isinstance(config.update, bool):
-        raise ValueError(UNSUPPORTED_CONFIG)
 
 
 def handle_embeddings_path(config: Config) -> None:
