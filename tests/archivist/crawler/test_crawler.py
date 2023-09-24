@@ -15,28 +15,31 @@ limitations under the License.
 
 test_crawler.py
 """
-import unittest
 from unittest.mock import patch, Mock
+import unittest
 from src.archivist.crawler.crawler import Crawler
+from git.exc import GitCommandError
 
 
 class TestValidateRepoUrl(unittest.TestCase):
 
-    @patch('src.archivist.crawler.validators.url')
+    @patch('validators.url')
     def test_valid_repo_url(self, mock_check_url):
         mock_check_url.return_value = True
         crawler = Crawler("https://github.com/sample/repo.git", "/output/path")
         self.assertTrue(crawler.validate_repo_url())
 
-    @patch('src.archivist.crawler.crawler.some_external_dependency_to_check_url')
+    @patch('validators.url')
     def test_invalid_repo_url(self, mock_check_url):
         mock_check_url.return_value = False
         crawler = Crawler("invalid_url", "/output/path")
-        self.assertFalse(crawler.validate_repo_url())
+        with self.assertRaises(ConnectionError):
+            crawler.validate_repo_url()
 
     def test_empty_repo_url(self):
+        crawler = Crawler("", "/output/path")
         with self.assertRaises(ValueError):
-            Crawler("", "/output/path")
+            crawler.validate_repo_url()
 
 
 class TestPrepareOutputPath(unittest.TestCase):
@@ -69,9 +72,9 @@ class TestPrepareOutputPath(unittest.TestCase):
 
 class TestCloneRepo(unittest.TestCase):
 
-    @patch('subprocess.run')
-    def test_clone_repo_success(self, mock_run):
-        mock_run.return_value = Mock(returncode=0)
+    @patch('git.Repo.clone_from')
+    def test_clone_repo_success(self, mock_clone_from):
+        mock_clone_from.return_value = None  # Mock successful clone
         crawler = Crawler("https://github.com/sample/repo.git", "/output/path")
         self.assertEqual(crawler.clone_repo(), "/output/path")
 

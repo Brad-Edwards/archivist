@@ -15,6 +15,13 @@ limitations under the License.
 
 crawler.py
 """
+import os
+import subprocess
+
+from validators import url as check_url
+from git import Repo, GitCommandError
+
+from src.archivist.errors.errors import UNSUPPORTED_URL
 
 
 class Crawler:
@@ -32,8 +39,11 @@ class Crawler:
 
         Raises:
             ValueError: If `repo_url` is invalid.
+            ValueError: If `output_path` is invalid.
         """
-        pass
+        # TODO: Switch to a common url validator.
+        self.repo_url = repo_url
+        self.output_path = output_path
 
     def validate_repo_url(self) -> bool:
         """
@@ -44,8 +54,18 @@ class Crawler:
 
         Raises:
             ConnectionError: If unable to connect to the repository.
+            ValueError: If the URL is empty.
         """
-        pass
+        # Check for an empty URL
+        if not self.repo_url:
+            raise ValueError("Repository URL cannot be empty.")
+
+        # Validate the URL
+        if not check_url(self.repo_url):
+            raise ConnectionError("Invalid or unreachable repository URL.")
+
+        return True
+
 
     def prepare_output_path(self) -> bool:
         """
@@ -57,7 +77,15 @@ class Crawler:
         Raises:
             PermissionError: If the program lacks write permission to create the directory.
         """
-        pass
+        if os.path.exists(self.output_path):
+            return True
+
+        try:
+            os.makedirs(self.output_path)
+        except PermissionError:
+            raise PermissionError(f"Permission denied: Cannot create directory at {self.output_path}.")
+
+        return True
 
     def clone_repo(self) -> str:
         """
@@ -69,7 +97,12 @@ class Crawler:
         Raises:
             GitCommandError: If the git clone operation fails.
         """
-        pass
+        try:
+            Repo.clone_from(self.repo_url, self.output_path)
+        except GitCommandError as e:
+            raise GitCommandError(f"Git clone operation failed: {str(e)}")
+
+        return self.output_path
 
     def execute(self) -> str:
         """
@@ -81,4 +114,9 @@ class Crawler:
         Raises:
             Exception: If any step in the operation fails.
         """
-        pass
+        try:
+            self.validate_repo_url()
+            self.prepare_output_path()
+            return self.clone_repo()
+        except Exception as e:
+            raise Exception(f"Cloning operation failed: {str(e)}")

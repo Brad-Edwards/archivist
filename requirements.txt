@@ -9,7 +9,7 @@ anthropic==0.3.6
 anyio==3.6.2
 appdirs==1.4.4
 appnope==0.1.3
--e git+https://github.com/Brad-Edwards/archivist.git@fa5b9deb5e73de1019a0da8ca8fa54267aa647f6#egg=archivist
+-e git+https://github.com/Brad-Edwards/archivist.git@6f4393733834d1b7be9469de72fbb3552365df73#egg=archivist
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 arrow==1.2.3
