@@ -19,6 +19,8 @@ Typical usage example:
     
     python __main__.py
 """
+import sys
+
 from typing import Optional, List
 import typer
 import subprocess
@@ -45,12 +47,6 @@ class Config:
         self.embeddings_path = embeddings_path
 
 
-def _version_callback(value: bool):
-    if value:
-        typer.echo(f"{__app_name__} version {__version__}")
-        raise typer.Exit()
-
-
 @app.command()
 def main(
         version: Optional[bool] = typer.Option(
@@ -58,7 +54,6 @@ def main(
             "--version",
             "-v",
             help="Print the version number and exit.",
-            callback=_version_callback,
             is_eager=True,
         ),
         github_url: Optional[str] = typer.Option(
@@ -107,6 +102,7 @@ def main(
             None,
             "--update",
             "-u",
+            is_eager=True,
             help="Update the Archivist tool to the latest version."
         ),
         embeddings_path: Optional[str] = typer.Option(
@@ -134,8 +130,14 @@ def main(
     Returns:
         None
     """
-    typer.echo(f"{__app_name__} version {__version__}")
-    config = (github_url, output_path, branch, verbose, quiet, token, config, update, embeddings_path)
+    if version:
+        typer.echo(f"{__app_name__} version {__version__}")
+        raise sys.exit(0)
+
+    if update:
+        subprocess.run(["pip", "install", "--upgrade", "archivist"])
+        typer.echo("Updated to the latest version.")
+        raise sys.exit(0)
 
 
 
