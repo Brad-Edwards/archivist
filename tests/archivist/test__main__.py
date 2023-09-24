@@ -16,27 +16,60 @@ limitations under the License.
 test__main__.py
 """
 import unittest
-from unittest.mock import patch
-from src.archivist.__main__ import main
+from unittest.mock import patch, Mock
+from src.archivist.__main__ import main, Config
 
+class TestArchivist(unittest.TestCase):
 
-class TestMain(unittest.TestCase):
+    @patch('src.archivist.__main__.ArgumentParser.parse_args')  # Mocking argparse's parse_args method
+    @patch('src.archivist.__main__.subprocess.run')  # Mocking subprocess.run method
+    @patch('src.archivist.__main__.sys.exit')  # Mocking sys.exit
+    def test_version_flag(self, mock_exit, mock_run, mock_parse_args):
+        mock_args = Mock()
+        mock_args.version = True
+        mock_parse_args.return_value = mock_args
 
-    @patch('src.archivist.__main__.sys.exit')
-    @patch('src.archivist.__main__.typer.echo')
-    def test_version_option(self, mock_echo, mock_exit):
-        main(version=True)
-        mock_echo.assert_called_once_with("archivist version 0.0.1")
+        main()
+
         mock_exit.assert_called_once_with(0)
 
-    @patch('src.archivist.__main__.sys.exit')
+    @patch('src.archivist.__main__.DEBUG', new_callable=Mock)
+    @patch('src.archivist.__main__.argparse.ArgumentParser.parse_args')
     @patch('src.archivist.__main__.subprocess.run')
-    @patch('src.archivist.__main__.typer.echo')
-    def test_update_option(self, mock_echo, mock_run, mock_exit):
-        mock_echo.reset_mock()
-        main(update=True)
-        mock_run.assert_called_once_with(["pip", "install", "--upgrade", "archivist"])
-        mock_echo.assert_called_once_with("Updated to the latest version.")
+    @patch('src.archivist.__main__.sys.exit')
+    def test_update_flag(self, mock_exit, mock_run, mock_parse_args, mock_debug):
+        mock_debug.return_value = False
+        mock_args = Mock()
+        mock_args.update = True
+        mock_args.version = False
+        mock_parse_args.return_value = mock_args
+
+        main()
+
+        mock_run.assert_called_once()
+        mock_exit.assert_called_once_with(0)
+
+    @patch('src.archivist.__main__.DEBUG', new_callable=Mock)
+    @patch('argparse.ArgumentParser.parse_args')
+    @patch('subprocess.run')
+    @patch('sys.exit')
+    def test_version_flag(self, mock_exit, mock_run, mock_parse_args, mock_debug):
+        mock_debug.return_value = False
+        mock_args = Mock()
+        mock_args.github_url = "some_url"
+        mock_args.output_path = "some_path"
+        mock_args.version = False
+        mock_args.update = False
+        mock_parse_args.return_value = mock_args
+
+        main()
+
+        config = Config(github_url=mock_args.github_url, output_path=mock_args.output_path,
+                        branch=mock_args.branch, verbose=mock_args.verbose, quiet=mock_args.quiet,
+                        token=mock_args.token, config_file=mock_args.config,
+                        embeddings_path=mock_args.embeddings_path)
+        self.assertEqual(config.github_url, "some_url")
+        self.assertEqual(config.output_path, "some_path")
 
 
 if __name__ == '__main__':

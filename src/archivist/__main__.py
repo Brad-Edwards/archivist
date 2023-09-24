@@ -23,20 +23,33 @@ import sys
 
 from typing import Optional
 from typing_extensions import Annotated
-import typer
+import argparse
 import subprocess
 from src.archivist import __app_name__, __version__, DEBUG
 
-app = typer.Typer()
+parser = argparse.ArgumentParser(prog='Archivist',
+                                 description="Archivist is a tool for understanding codebases.")
+parser.add_argument("--version", "-v", action="store_true", help="Print the version number and exit.", default=False)
+parser.add_argument("--update", "-u", action="store_true", help="Update the Archivist tool to the latest version.", default=False)
+parser.add_argument("--github_url", "-g", type=str, help="The GitHub URL to download the code from.")
+parser.add_argument("--output_path", "-o", type=str, help="The path where the GitHub repo will be cloned.")
+parser.add_argument("--branch", "-b", type=str, help="Specify a particular branch to clone.")
+parser.add_argument("--verbose", "-V", action="store_true", help="Enable verbose output.", default=False)
+parser.add_argument("--quiet", "-q", action="store_true", help="Suppress all output except errors.", default=False)
+parser.add_argument("--token", "-t", type=str, help="Provide a GitHub authentication token.")
+parser.add_argument("--config", "-c", type=str, help="Path to a configuration file.")
+parser.add_argument("--embeddings_path", "-e", type=str, help="The output path for vector embeddings.")
 
 
 class Config:
-    def __init__(self, version: Optional[bool], github_url: Optional[str],
+    """
+    Config class for Archivist.
+    """
+    def __init__(self, github_url: Optional[str],
                  output_path: Optional[str], branch: Optional[str],
                  verbose: Optional[bool], quiet: Optional[bool],
                  token: Optional[str], config_file: Optional[str],
-                 update: Optional[bool], embeddings_path: Optional[str]):
-        self.version = version
+                 embeddings_path: Optional[str]):
         self.github_url = github_url
         self.output_path = output_path
         self.branch = branch
@@ -44,73 +57,10 @@ class Config:
         self.quiet = quiet
         self.token = token
         self.config_file = config_file
-        self.update = update
         self.embeddings_path = embeddings_path
 
 
-@app.command()
-def main(
-        version: Annotated[Optional[bool], typer.Option(
-            False,
-            "--version",
-            "-v",
-            help="Print the version number and exit.",
-        )] = None,
-        github_url: Annotated[Optional[str], typer.Option(
-            None,
-            "--github-url",
-            "-g",
-            help="The GitHub URL to download the code from."
-        )] = None,
-        output_path: Annotated[Optional[str], typer.Option(
-            None,
-            "--output-path",
-            "-o",
-            help="The path where the GitHub repo will be cloned."
-        )] = None,
-        branch: Annotated[Optional[str], typer.Option(
-            None,
-            "--branch",
-            "-b",
-            help="Specify a particular branch to clone."
-        )] = None,
-        verbose: Annotated[Optional[bool], typer.Option(
-            False,
-            "--verbose",
-            "-V",
-            help="Enable verbose output."
-        )] = None,
-        quiet: Annotated[Optional[bool], typer.Option(
-            False,
-            "--quiet",
-            "-q",
-            help="Suppress all output except errors."
-        )] = None,
-        token: Annotated[Optional[str], typer.Option(
-            None,
-            "--token",
-            "-k",
-            help="Provide a GitHub authentication token."
-        )] = None,
-        config: Annotated[Optional[str], typer.Option(
-            "config.yaml",
-            "--config",
-            "-c",
-            help="Path to a configuration file."
-        )] = None,
-        update: Annotated[Optional[bool], typer.Option(
-            None,
-            "--update",
-            "-u",
-            help="Update the Archivist tool to the latest version."
-        )] = None,
-        embeddings_path: Annotated[Optional[str], typer.Option(
-            None,
-            "--embeddings-path",
-            "-e",
-            help="The output path for vector embeddings."
-        )] = None,
-) -> None:
+def main() -> None:
     """
     Archivist is a tool for understanding codebases.
 
@@ -129,15 +79,21 @@ def main(
     Returns:
         None
     """
-    if version:
-        typer.echo(f"{__app_name__} version {__version__}")
+    args = parser.parse_args()
+    if args.version:
+        print(f"{__app_name__} version {__version__}")
         sys.exit(0)
 
-    if update:
+    if args.update:
         if DEBUG:
+            print("DEBUG: Updating Archivist to the latest version.")
             subprocess.run(["pip", "install", "-e", "."])
+            sys.exit(0)
         else:
             subprocess.run(["pip", "install", "--upgrade", "archivist"])
-        typer.echo("Updated to the latest version.")
-        sys.exit(0)
+            print("Updated to the latest version.")
+            sys.exit(0)
 
+    config = Config(github_url=args.github_url, output_path=args.output_path, branch=args.branch,
+                    verbose=args.verbose, quiet=args.quiet, token=args.token, config_file=args.config,
+                    embeddings_path=args.embeddings_path)

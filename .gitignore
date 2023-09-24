@@ -162,4 +162,5 @@ cython_debug/
 .idea/archivist.iml
 docs/
 archivist.iml
-.idea/sonarlint/
+
+
