@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2023-09-23
+
+### Added
+
+- Crawler clones repo to target directory
+
+## [0.1.3] - 2023-09-23
+
+### Fixed
+
+- The `--version` and `--update` flags now work as expected, switched to argparse
+
+## [0.1.2] - 2023-09-23
+
+### Fixed
+
+- The `--version` and `--update` flags should now work as expected
+
+## [0.1.1] - 2023-09-23
+
+### Added
+
+- --version and --update work as expected
+
 ## [0.1.0] - 2023-09-21
 
 ### Added
@@ -19,3 +43,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - .gitignore
 - setup.py
 - requirements.txt
+
