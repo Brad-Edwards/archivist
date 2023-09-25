@@ -18,7 +18,7 @@ test_cli.py
 import unittest
 from unittest import mock
 from src.archivist.cli.cli import handle_config, handle_github_url, handle_output_path, \
-    handle_branch, handle_verbose, handle_quiet, handle_token, handle_config_file, handle_update, \
+    handle_branch, handle_verbose, handle_quiet, handle_token, handle_config_file, \
     handle_embeddings_path
 from src.archivist.__main__ import Config
 from src.archivist.errors.errors import UNSUPPORTED_CONFIG, NO_CONFIG, UNSUPPORTED_URL, NO_EMPTY_PATH, \
@@ -34,15 +34,14 @@ class TestHandleConfig(unittest.TestCase):
     @mock.patch("src.archivist.cli.cli.handle_quiet")
     @mock.patch("src.archivist.cli.cli.handle_token")
     @mock.patch("src.archivist.cli.cli.handle_config_file")
-    @mock.patch("src.archivist.cli.cli.handle_update")
     @mock.patch("src.archivist.cli.cli.handle_embeddings_path")
-    def test_handle_config_with_valid_config_object(self, mock_handle_embeddings_path, mock_handle_update,
+    def test_handle_config_with_valid_config_object(self, mock_handle_embeddings_path,
                                                     mock_handle_config_file, mock_handle_token, mock_handle_quiet,
                                                     mock_handle_verbose, mock_handle_branch,
                                                     mock_handle_output_path, mock_handle_github_url):
-        initial_config = Config(version=True, github_url="https://github.com/test", output_path="test",
+        initial_config = Config(github_url="https://github.com/test", output_path="test",
                                 branch="master", verbose=True, quiet=True, token="test", config_file="test",
-                                update=False, embeddings_path="test")
+                                embeddings_path="test")
         final_config = handle_config(initial_config)
         self.assertIsInstance(final_config, Config)
         mock_handle_github_url.assert_called_once()
@@ -52,7 +51,6 @@ class TestHandleConfig(unittest.TestCase):
         mock_handle_quiet.assert_called_once()
         mock_handle_token.assert_called_once()
         mock_handle_config_file.assert_called_once()
-        mock_handle_update.assert_called_once()
         mock_handle_embeddings_path.assert_called_once()
 
     def test_handle_config_with_no_config_object(self):
@@ -64,8 +62,8 @@ class TestHandleConfig(unittest.TestCase):
             handle_config("test")
 
     def test_handle_config_with_empty_config_object(self):
-        initial_config = Config(version=None, github_url=None, output_path=None, branch=None, verbose=None,
-                                quiet=None, token=None, config_file=None, update=None, embeddings_path=None)
+        initial_config = Config(github_url=None, output_path=None, branch=None, verbose=None,
+                                quiet=None, token=None, config_file=None, embeddings_path=None)
         with self.assertRaisesRegex(ValueError, UNSUPPORTED_CONFIG):
             handle_config(initial_config)
 
@@ -75,7 +73,7 @@ class TestHandleGithubUrl(unittest.TestCase):
     def test_valid_github_url(self):
         config = Config(github_url="https://github.com/username/repo.git",
                         output_path="test", branch="master", verbose=True, quiet=True, token="test",
-                        config_file="test", update=False, embeddings_path="test", version=False)
+                        config_file="test", embeddings_path="test")
         try:
             handle_github_url(config)
         except ValueError:
@@ -84,28 +82,28 @@ class TestHandleGithubUrl(unittest.TestCase):
     def test_invalid_github_url(self):
         config = Config(github_url="https://gitlab.com/username/repo.git",
                         output_path="test", branch="master", verbose=True, quiet=True, token="test",
-                        config_file="test", update=False, embeddings_path="test", version=False)
+                        config_file="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, UNSUPPORTED_URL):
             handle_github_url(config)
 
     def test_empty_url(self):
         config = Config(github_url="",
                         output_path="test", branch="master", verbose=True, quiet=True, token="test",
-                        config_file="test", update=False, embeddings_path="test", version=False)
+                        config_file="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, UNSUPPORTED_URL):
             handle_github_url(config)
 
     def test_malformed_url(self):
         config = Config(github_url="malformed_url",
                         output_path="test", branch="master", verbose=True, quiet=True, token="test",
-                        config_file="test", update=False, embeddings_path="test", version=False)
+                        config_file="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, UNSUPPORTED_URL):
             handle_github_url(config)
 
     def test_none_url(self):
         config = Config(github_url=None,
                         output_path="test", branch="master", verbose=True, quiet=True, token="test",
-                        config_file="test", update=False, embeddings_path="test", version=False)
+                        config_file="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, UNSUPPORTED_URL):
             handle_github_url(config)
 
@@ -114,7 +112,7 @@ class TestHandleOutputPath(unittest.TestCase):
 
     def test_valid_output_path(self):
         config = Config(output_path="./output", github_url="test", branch="master", verbose=True, quiet=True,
-                        token="test", config_file="test", update=False, embeddings_path="test", version=False)
+                        token="test", config_file="test", embeddings_path="test")
         try:
             handle_output_path(config)
         except ValueError:
@@ -122,19 +120,19 @@ class TestHandleOutputPath(unittest.TestCase):
 
     def test_none_output_path(self):
         config = Config(output_path=None, github_url="test", branch="master", verbose=True, quiet=True,
-                        token="test", config_file="test", update=False, embeddings_path="test", version=False)
+                        token="test", config_file="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, NO_EMPTY_PATH):
             handle_output_path(config)
 
     def test_empty_output_path(self):
         config = Config(output_path="", github_url="test", branch="master", verbose=True, quiet=True,
-                        token="test", config_file="test", update=False, embeddings_path="test", version=False)
+                        token="test", config_file="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, NO_EMPTY_PATH):
             handle_output_path(config)
 
     def test_invalid_characters_in_output_path(self):
         config = Config(output_path="output<>|:", github_url="test", branch="master", verbose=True, quiet=True,
-                        token="test", config_file="test", update=False, embeddings_path="test", version=False)
+                        token="test", config_file="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, UNSUPPORTED_PATH):
             handle_output_path(config)
 
@@ -168,7 +166,7 @@ class TestHandleConfigFile(unittest.TestCase):
     def test_valid_config_file(self):
         with mock.patch('os.path.exists', return_value=True):
             config = Config(config_file="./config.yaml", github_url="test", output_path="test", branch="master",
-                            verbose=True, quiet=True, token="test", update=False, embeddings_path="test", version=False)
+                            verbose=True, quiet=True, token="test", embeddings_path="test")
             try:
                 handle_config_file(config)
             except ValueError:
@@ -176,57 +174,20 @@ class TestHandleConfigFile(unittest.TestCase):
 
     def test_none_config_file(self):
         config = Config(config_file=None, github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", update=False, embeddings_path="test", version=False)
+                        verbose=True, quiet=True, token="test", embeddings_path="test")
         self.assertIsNone(handle_config_file(config))
 
     @mock.patch("src.archivist.cli.cli.os.path.exists")
     def test_empty_config_file(self, mock_path_exists):
         config = Config(config_file="", github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", update=False, embeddings_path="test", version=False)
+                        verbose=True, quiet=True, token="test", embeddings_path="test")
         self.assertIsNone(handle_config_file(config))
 
     def test_invalid_characters_in_config_file(self):
         config = Config(config_file="config<>|:", github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", update=False, embeddings_path="test", version=False)
+                        verbose=True, quiet=True, token="test", embeddings_path="test")
         with self.assertRaisesRegex(ValueError, UNSUPPORTED_CONFIG_PATH):
             handle_config_file(config)
-
-
-class TestHandleUpdate(unittest.TestCase):
-
-    def test_update_is_true(self):
-        config = Config(update=True, github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", config_file="test", embeddings_path="test",
-                        version=False)
-        try:
-            handle_update(config)
-        except ValueError:
-            self.fail("handle_update() raised ValueError unexpectedly when update is True!")
-
-    def test_update_is_false(self):
-        config = Config(update=False, github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", config_file="test", embeddings_path="test",
-                        version=False)
-        try:
-            handle_update(config)
-        except ValueError:
-            self.fail("handle_update() raised ValueError unexpectedly when update is False!")
-
-    def test_update_is_none(self):
-        config = Config(update=None, github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", config_file="test", embeddings_path="test",
-                        version=False)
-        try:
-            handle_update(config)
-        except ValueError:
-            self.fail("handle_update() raised ValueError unexpectedly when update is None!")
-
-    def test_update_is_unsupported_value(self):
-        config = Config(update="unsupported", github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", config_file="test", embeddings_path="test",
-                        version=False)
-        with self.assertRaisesRegex(ValueError, UNSUPPORTED_CONFIG):
-            handle_update(config)
 
 
 class TestHandleEmbeddingsPath(unittest.TestCase):
@@ -234,7 +195,7 @@ class TestHandleEmbeddingsPath(unittest.TestCase):
     def test_valid_embeddings_path_exists(self):
         with mock.patch('os.path.exists', return_value=True):
             config = Config(embeddings_path="./embeddings", github_url="test", output_path="test", branch="master",
-                            verbose=True, quiet=True, token="test", config_file="test", update=False, version=False)
+                            verbose=True, quiet=True, token="test", config_file="test")
             try:
                 handle_embeddings_path(config)
             except ValueError:
@@ -243,7 +204,7 @@ class TestHandleEmbeddingsPath(unittest.TestCase):
     def test_valid_embeddings_path_not_exists(self):
         with mock.patch('os.path.exists', return_value=False):
             config = Config(embeddings_path="./embeddings", github_url="test", output_path="test", branch="master",
-                            verbose=True, quiet=True, token="test", config_file="test", update=False, version=False)
+                            verbose=True, quiet=True, token="test", config_file="test")
             try:
                 handle_embeddings_path(config)
             except ValueError:
@@ -251,13 +212,13 @@ class TestHandleEmbeddingsPath(unittest.TestCase):
 
     def test_no_embeddings_path(self):
         config = Config(embeddings_path=None, github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", config_file="test", update=False, version=False)
+                        verbose=True, quiet=True, token="test", config_file="test")
         with self.assertRaises(ValueError):
             handle_embeddings_path(config)
 
     def test_invalid_embeddings_path(self):
         config = Config(embeddings_path="::invalid::", github_url="test", output_path="test", branch="master",
-                        verbose=True, quiet=True, token="test", config_file="test", update=False, version=False)
+                        verbose=True, quiet=True, token="test", config_file="test")
         with self.assertRaises(ValueError):
             handle_embeddings_path(config)
 
